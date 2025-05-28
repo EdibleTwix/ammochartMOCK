@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ammunition Chart Viewer</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <h1>Ammunition Chart Viewer</h1>
+
+  <form id="chartForm">
+    <!-- Cartridge -->
+    <label for="cartridge">Cartridge:</label>
+    <select id="cartridge" required>
+      <option value="">Select Cartridge</option>
+      <option value="4.6x30mm">4.6×30mm</option>
+    </select>
+
+    <br><br>
+
+    <!-- Weapon -->
+    <label for="weapon">Weapon:</label>
+    <select id="weapon" required disabled>
+      <option value="">Select Weapon</option>
+    </select>
+
+    <br><br>
+
+    <!-- Barrel -->
+    <label for="barrel">Barrel Length:</label>
+    <select id="barrel" required disabled>
+      <option value="">Select Barrel</option>
+    </select>
+
+    <br><br>
+
+    <!-- Ammo -->
+    <label for="ammo">Ammo Type:</label>
+    <select id="ammo" required disabled>
+      <option value="">Select Ammo</option>
+    </select>
+
+    <br><br>
+
+
+    <button type="submit">Show Chart</button>
+  </form>
+
+  <div id="chartDisplay" class="chart-container"></div>
+
+  <script src="ammochartmap.js"></script>
+</body>
+</html>
