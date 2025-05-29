@@ -3,8 +3,8 @@ const weaponDropdown = document.getElementById('weapon');
 const barrelDropdown = document.getElementById('barrel');
 const ammoDropdown = document.getElementById('ammo');
 const chartDisplay = document.getElementById('chartDisplay');
+const showChartBtn = document.getElementById('showChartBtn');
 
-// Full dataset grouped by cartridge → weapon → barrel → ammo
 const data = {
   "4.6x30mm": {
     mp7: {
@@ -12,13 +12,78 @@ const data = {
         "180mm": ["sub sx", "fmj sx", "action sx", "ap sx"]
       }
     }
+  },
+  "5.56x45mm": {
+    ak19: {
+      barrels: {
+        "415": ["sp"]
+      }
+    },
+    m4a1: {
+      barrels: {
+        "10.5": ["hpbt", "sp"],
+        "14.5": ["sp"],
+        "16": ["sp"],
+        "18": ["sp"],
+        "20": ["sp"]
+      }
+    }
   }
 };
+
+function updateImage() {
+  const cartridge = cartridgeDropdown.value;
+  const weapon = weaponDropdown.value;
+  const barrel = barrelDropdown.value;
+  const ammo = ammoDropdown.value;
+
+  chartDisplay.innerHTML = ""; // Clear previous
+
+  if (weapon && barrel && ammo) {
+    const filename = `heatmaps/${cartridge}_${weapon}_${barrel}_${ammo}.png`;
+
+    const img = document.createElement('img');
+    img.src = filename;
+    img.alt = 'Penetration Heatmap';
+    img.onerror = function () {
+      this.style.display = 'none';
+      const msg = document.createElement('p');
+      msg.textContent = '⚠️ No data found for that combination.';
+      msg.style.color = 'red';
+      msg.style.fontWeight = 'bold';
+      chartDisplay.appendChild(msg);
+    };
+
+    chartDisplay.appendChild(img);
+  }
+
+  if (cartridge && data[cartridge]) {
+    const combos = [];
+    for (const weapon in data[cartridge]) {
+      for (const barrel in data[cartridge][weapon].barrels) {
+        for (const ammo of data[cartridge][weapon].barrels[barrel]) {
+          combos.push(`heatmaps/${cartridge}_${weapon}_${barrel}_${ammo}.png`);
+        }
+      }
+    }
+
+    const list = document.createElement('ul');
+    list.style.textAlign = "left";
+    combos.forEach(path => {
+      const item = document.createElement('li');
+      item.textContent = path;
+      list.appendChild(item);
+    });
+
+    chartDisplay.appendChild(document.createElement('hr'));
+    chartDisplay.appendChild(list);
+  }
+}
+
 
 cartridgeDropdown.addEventListener('change', function () {
   const cartridge = this.value;
 
-  // Reset all dependent dropdowns
   weaponDropdown.innerHTML = `<option value="">Select Weapon</option>`;
   barrelDropdown.innerHTML = `<option value="">Select Barrel</option>`;
   ammoDropdown.innerHTML = `<option value="">Select Ammo</option>`;
@@ -36,6 +101,8 @@ cartridgeDropdown.addEventListener('change', function () {
 
     weaponDropdown.disabled = false;
   }
+
+  updateImage();
 });
 
 weaponDropdown.addEventListener('change', function () {
@@ -57,6 +124,8 @@ weaponDropdown.addEventListener('change', function () {
 
     barrelDropdown.disabled = false;
   }
+
+  updateImage();
 });
 
 barrelDropdown.addEventListener('change', function () {
@@ -77,30 +146,8 @@ barrelDropdown.addEventListener('change', function () {
 
     ammoDropdown.disabled = false;
   }
+
+  updateImage();
 });
 
-document.getElementById('chartForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  const weapon = weaponDropdown.value;
-  const barrel = barrelDropdown.value;
-  const ammo = ammoDropdown.value;
-
-  if (!weapon || !barrel || !ammo) {
-    alert('Please select all fields.');
-    return;
-  }
-
-  const filename = `heatmaps/${weapon}_${barrel}_${ammo}.png`;
-
-chartDisplay.innerHTML = `
-  <img src="${filename}" alt="Penetration Heatmap"
-       onerror="this.style.display='none'; 
-                const msg = document.createElement('p');
-                msg.textContent = '⚠️ No data found for that combination.';
-                msg.style.color = 'red';
-                msg.style.fontWeight = 'bold';
-                this.parentElement.appendChild(msg);">
-`;
-
-});
+ammoDropdown.addEventListener('change', updateImage);
