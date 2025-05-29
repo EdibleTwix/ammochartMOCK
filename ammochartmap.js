@@ -4,63 +4,42 @@ const barrelDropdown = document.getElementById('barrel');
 const ammoDropdown = document.getElementById('ammo');
 const chartDisplay = document.getElementById('chartDisplay');
 
-// Static list of all available heatmaps
 const allFiles = [
-  "5.56x45_ak19_415_sp",
-  "5.56x45_m4a1_10.5_hpbt",
-  "5.56x45_m4a1_10.5_sp",
-  "5.56x45_m4a1_14.5_sp",
-  "5.56x45_m4a1_16_sp",
-  "5.56x45_m4a1_18_sp",
-  "5.56x45_m4a1_20_sp"
+  "5.56x45_ak19_415mm_sp",
+  "5.56x45_m4a1_10.5in_hpbt",
+  "5.56x45_m4a1_10.5in_sp",
+  "5.56x45_m4a1_14.5in_sp",
+  "5.56x45_m4a1_16in_sp",
+  "5.56x45_m4a1_18in_sp",
+  "5.56x45_m4a1_20in_sp"
 ];
 
-// Parse into structured data for dropdown logic
 const parsedData = allFiles.map(filename => {
   const [cartridge, weapon, barrel, ammo] = filename.split('_');
   return { cartridge, weapon, barrel, ammo, path: `heatmaps/${filename}.png` };
 });
 
-function populateDropdown(dropdown, options) {
-  dropdown.innerHTML = `<option value="">Select ${dropdown.id.charAt(0).toUpperCase() + dropdown.id.slice(1)}</option>`;
-  options.forEach(opt => {
-    const option = document.createElement('option');
-    option.value = opt;
-    option.textContent = opt.toUpperCase();
-    dropdown.appendChild(option);
-  });
-  dropdown.disabled = options.length === 0;
-}
+function populateDropdowns() {
+  const uniqueCartridges = [...new Set(parsedData.map(d => d.cartridge))];
+  const uniqueWeapons = [...new Set(parsedData.map(d => d.weapon))];
+  const uniqueBarrels = [...new Set(parsedData.map(d => d.barrel))];
+  const uniqueAmmos = [...new Set(parsedData.map(d => d.ammo))];
 
-function updateDropdowns() {
-  const cartridge = cartridgeDropdown.value;
-  const weapon = weaponDropdown.value;
-  const barrel = barrelDropdown.value;
+  const fill = (dropdown, options, label) => {
+    dropdown.innerHTML = `<option value="">Select ${label}</option>`;
+    options.forEach(opt => {
+      const option = document.createElement('option');
+      option.value = opt;
+      option.textContent = opt;
+      dropdown.appendChild(option);
+    });
+    dropdown.disabled = false;
+  };
 
-  // Filter from original data
-  const filtered = parsedData.filter(entry =>
-    (!cartridge || entry.cartridge === cartridge) &&
-    (!weapon || entry.weapon === weapon) &&
-    (!barrel || entry.barrel === barrel)
-  );
-
-  // Update weapon dropdown
-  if (!weapon) {
-    const weapons = [...new Set(filtered.map(f => f.weapon))];
-    populateDropdown(weaponDropdown, weapons);
-  }
-
-  // Update barrel dropdown
-  if (weapon && !barrel) {
-    const barrels = [...new Set(filtered.map(f => f.barrel))];
-    populateDropdown(barrelDropdown, barrels);
-  }
-
-  // Update ammo dropdown
-  if (barrel) {
-    const ammos = [...new Set(filtered.map(f => f.ammo))];
-    populateDropdown(ammoDropdown, ammos);
-  }
+  fill(cartridgeDropdown, uniqueCartridges, "Cartridge");
+  fill(weaponDropdown, uniqueWeapons, "Weapon");
+  fill(barrelDropdown, uniqueBarrels, "Barrel");
+  fill(ammoDropdown, uniqueAmmos, "Ammo");
 }
 
 function updateImages() {
@@ -79,11 +58,7 @@ function updateImages() {
   chartDisplay.innerHTML = '';
 
   if (filtered.length === 0) {
-    const msg = document.createElement('p');
-    msg.textContent = '⚠️ No matching heatmaps.';
-    msg.style.color = 'red';
-    msg.style.fontWeight = 'bold';
-    chartDisplay.appendChild(msg);
+    chartDisplay.innerHTML = '<p style="color:red">⚠️ No matching heatmaps found.</p>';
     return;
   }
 
@@ -97,32 +72,11 @@ function updateImages() {
   });
 }
 
-// Initial page load
+[cartridgeDropdown, weaponDropdown, barrelDropdown, ammoDropdown].forEach(dropdown => {
+  dropdown.addEventListener('change', updateImages);
+});
+
 document.addEventListener('DOMContentLoaded', () => {
-  // Show all images on first load
+  populateDropdowns();
   updateImages();
 });
-
-// Event listeners
-cartridgeDropdown.addEventListener('change', () => {
-  weaponDropdown.value = '';
-  barrelDropdown.value = '';
-  ammoDropdown.value = '';
-  updateDropdowns();
-  updateImages();
-});
-
-weaponDropdown.addEventListener('change', () => {
-  barrelDropdown.value = '';
-  ammoDropdown.value = '';
-  updateDropdowns();
-  updateImages();
-});
-
-barrelDropdown.addEventListener('change', () => {
-  ammoDropdown.value = '';
-  updateDropdowns();
-  updateImages();
-});
-
-ammoDropdown.addEventListener('change', updateImages);
